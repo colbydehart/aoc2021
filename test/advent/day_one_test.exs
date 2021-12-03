@@ -1,5 +1,5 @@
 defmodule Advent.DayOneTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest Advent.DayOne
 
   # :code.priv_dir(:advent)
