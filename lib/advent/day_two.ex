@@ -55,10 +55,12 @@ defmodule Advent.DayTwo do
   150
   """
   def part_one(input) do
-    {x, y} = input
-    |> Enum.map(&String.split/1)
-    |> Enum.map(fn [direction, amount] -> [direction, Integer.parse(amount) |> elem(0)] end)
-    |> Enum.reduce({0, 0}, &handle_instruction/2)
+    {x, y} =
+      input
+      |> Enum.map(&String.split/1)
+      |> Enum.map(fn [direction, amount] -> [direction, String.to_integer(amount) ] end)
+      |> Enum.reduce({0, 0}, &handle_instruction/2)
+
     x * y
   end
 
@@ -117,14 +119,18 @@ defmodule Advent.DayTwo do
 
   """
   def part_two(input) do
-    {x, y, _} = input
-    |> Enum.map(&String.split/1)
-    |> Enum.map(fn [direction, amount] -> [direction, Integer.parse(amount) |> elem(0)] end)
-    |> Enum.reduce({0, 0, 0}, &handle_aim_instruction/2)
+    {x, y, _} =
+      input
+      |> Enum.map(&String.split/1)
+      |> Enum.map(fn [direction, amount] -> [direction, String.to_integer(amount)] end)
+      |> Enum.reduce({0, 0, 0}, &handle_aim_instruction/2)
+
     x * y
   end
 
-  defp handle_aim_instruction(["forward", amount], {x, y, aim}), do: {x + amount, y + amount * aim, aim}
-  defp handle_aim_instruction(["down", amount], {x, y, aim}), do: {x, y , aim + amount}
+  defp handle_aim_instruction(["forward", amount], {x, y, aim}),
+    do: {x + amount, y + amount * aim, aim}
+
+  defp handle_aim_instruction(["down", amount], {x, y, aim}), do: {x, y, aim + amount}
   defp handle_aim_instruction(["up", amount], {x, y, aim}), do: {x, y, aim - amount}
 end
