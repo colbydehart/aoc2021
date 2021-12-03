@@ -46,18 +46,13 @@ defmodule Advent.DayOne do
   iex> Advent.DayOne.part_one([1,2,3,2,1])
   2
   """
-  @spec part_one(input :: list(integer)) :: non_neg_integer
-  def part_one(input) do
-    input
-    |> Enum.reduce(&count_increases/2)
-    |> Map.get(:total, 0)
-  end
+  def part_one([_]), do: 0
+  def part_one([a, b] = input) when b > a, do: part_one(tl(input)) + 1
 
-  def count_increases(second, first) when is_integer(first) and is_integer(second),
-    do: %{total: if(second > first, do: 1, else: 0), last: second}
+  def part_one([a, b | _] = input) when b > a,
+    do: part_one(tl(input)) + 1
 
-  def count_increases(next, %{total: total, last: last}),
-    do: %{total: if(next > last, do: total + 1, else: total), last: next}
+  def part_one(input), do: part_one(tl(input))
 
   @doc """
   Start by comparing the first and second
@@ -92,16 +87,14 @@ defmodule Advent.DayOne do
   iex> Advent.DayOne.part_two([607,618,618,617,647,716,769,792])
   5
   """
-  def part_two(input), do: part_two(input, total: 0)
+  def part_two([_, _, _]), do: 0
 
-  def part_two([_, _, _], total: total), do: total
+  def part_two([a, b, c, d] = input) when a + b + c < b + c + d,
+    do: part_two(tl(input)) + 1
 
-  def part_two([a, b, c, d] = input, total: total) when a + b + c < b + c + d,
-    do: part_two(tl(input), total: total + 1)
+  def part_two([a, b, c, d | _] = input) when a + b + c < b + c + d,
+    do: part_two(tl(input)) + 1
 
-  def part_two([a, b, c, d | _] = input, total: total) when a + b + c < b + c + d,
-    do: part_two(tl(input), total: total + 1)
-
-  def part_two(input, total: total),
-    do: part_two(tl(input), total: total)
+  def part_two(input),
+    do: part_two(tl(input))
 end
