@@ -73,20 +73,15 @@ defmodule Advent.DayThree do
   """
   def part_one(input), do: gamma(input) * epsilon(input)
 
-  def gamma(input) do
+  def gamma(input), do: get_rate(input, &max_frequency_bit/1)
+  def epsilon(input), do: get_rate(input, &min_frequency_bit/1)
+
+  def get_rate(input, bit_getter) do
     input
     |> split_and_rotate()
-    |> Enum.map(&max_frequency_bit/1)
+    |> Enum.map(bit_getter)
     |> join_and_parse()
   end
-
-  def epsilon(input) do
-    input
-    |> split_and_rotate()
-    |> Enum.map(&min_frequency_bit/1)
-    |> join_and_parse()
-  end
-
 
   @doc """
 
@@ -162,38 +157,50 @@ defmodule Advent.DayThree do
 
   ## Examples
 
-  iex> Advent.DayThree.part_two([
-  ...>   "00100",
-  ...>   "11110",
-  ...>   "10110",
-  ...>   "10111",
-  ...>   "10101",
-  ...>   "01111",
-  ...>   "00111",
-  ...>   "11100",
-  ...>   "10000",
-  ...>   "11001",
-  ...>   "00010",
-  ...>   "01010"
-  ...> ])
+  iex> Advent.DayThree.part_two(~w(
+  ...> 00100
+  ...> 11110
+  ...> 10110
+  ...> 10111
+  ...> 10101
+  ...> 01111
+  ...> 00111
+  ...> 11100
+  ...> 10000
+  ...> 11001
+  ...> 00010
+  ...> 01010
+  ...> ))
   230
   """
   def part_two(input), do: o2_rating(input) * co2_rating(input)
 
-  def o2_rating(input) do
-    input
-    |> split_and_rotate()
-    |> Enum.reduce_while(nil, fn xs, nil -> 
+  def o2_rating(input), do: get_rating(input, &max_frequency_bit/1)
+  def co2_rating(input), do: get_rating(input, &min_frequency_bit/1)
 
+  def get_rating(input, bit_getter) do
+    len = String.length(hd(input))
+
+    Range.new(0, len)
+    |> Enum.reduce_while(input, fn idx, codes ->
+      bit =
+        codes
+        |> split_and_rotate()
+        |> Enum.at(idx)
+        |> bit_getter.()
+
+      codes
+      |> Enum.filter(fn code -> String.at(code, idx) == bit end)
+      |> case do
+        [x] -> {:halt, x}
+        xs -> {:cont, xs}
+      end
     end)
-
-
+    |> Integer.parse(2)
+    |> elem(0)
   end
 
-  def co2_rating(input) do
-    230
-  end
-
+  # Utility fns
 
   @spec split_and_rotate(input :: list(binary())) :: list(tuple())
   def split_and_rotate(input) do
@@ -210,21 +217,37 @@ defmodule Advent.DayThree do
     |> elem(0)
   end
 
-  @spec max_frequency_bit(col :: tuple()) :: non_neg_integer()
+  @spec max_frequency_bit(col :: tuple()) :: binary()
   def max_frequency_bit(col) do
-      col
-      |> Tuple.to_list()
-      |> Enum.frequencies()
-      |> Enum.max_by(&elem(&1, 1))
-      |> elem(0)
+    col
+    |> Tuple.to_list()
+    |> Enum.frequencies()
+    |> case do
+      %{"0" => same, "1" => same} ->
+        "1"
+
+      %{"0" => zeroes, "1" => ones} when zeroes > ones ->
+        "0"
+
+      %{"0" => zeroes, "1" => ones} when zeroes < ones ->
+        "1"
+    end
   end
 
-  @spec min_frequency_bit(col :: tuple()) :: non_neg_integer()
+  @spec min_frequency_bit(col :: tuple()) :: binary()
   def min_frequency_bit(col) do
-      col
-      |> Tuple.to_list()
-      |> Enum.frequencies()
-      |> Enum.min_by(&elem(&1, 1))
-      |> elem(0)
+    col
+    |> Tuple.to_list()
+    |> Enum.frequencies()
+    |> case do
+      %{"0" => same, "1" => same} ->
+        "0"
+
+      %{"0" => zeroes, "1" => ones} when zeroes < ones ->
+        "0"
+
+      %{"0" => zeroes, "1" => ones} when zeroes > ones ->
+        "1"
+    end
   end
 end

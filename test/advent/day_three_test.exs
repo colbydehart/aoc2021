@@ -13,6 +13,6 @@ defmodule Advent.DayThreeTest do
   # |> Path.join("./day_three_input.txt")
   # |> File.read!()
   # |> String.split("\n")
-  # |> Enum.filter(& &1 !== "")
+  # |> Enum.filter(&(&1 !== ""))
   # |> Advent.DayThree.part_two()
 end
