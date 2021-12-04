@@ -58,7 +58,7 @@ defmodule Advent.DayTwo do
     {x, y} =
       input
       |> Enum.map(&String.split/1)
-      |> Enum.map(fn [direction, amount] -> [direction, String.to_integer(amount) ] end)
+      |> Enum.map(fn [direction, amount] -> [direction, String.to_integer(amount)] end)
       |> Enum.reduce({0, 0}, &handle_instruction/2)
 
     x * y

@@ -80,7 +80,8 @@ defmodule Advent.DayThree do
     input
     |> split_and_rotate()
     |> Enum.map(bit_getter)
-    |> join_and_parse()
+    |> Enum.join()
+    |> parse_binary()
   end
 
   @doc """
@@ -182,22 +183,21 @@ defmodule Advent.DayThree do
     len = String.length(hd(input))
 
     Range.new(0, len)
-    |> Enum.reduce_while(input, fn idx, codes ->
+    |> Enum.reduce_while(input, fn pos, codes ->
       bit =
         codes
         |> split_and_rotate()
-        |> Enum.at(idx)
+        |> Enum.at(pos)
         |> bit_getter.()
 
       codes
-      |> Enum.filter(fn code -> String.at(code, idx) == bit end)
+      |> Enum.filter(fn code -> String.at(code, pos) == bit end)
       |> case do
         [x] -> {:halt, x}
         xs -> {:cont, xs}
       end
     end)
-    |> Integer.parse(2)
-    |> elem(0)
+    |> parse_binary()
   end
 
   # Utility fns
@@ -207,47 +207,29 @@ defmodule Advent.DayThree do
     input
     |> Enum.map(&String.split(&1, "", trim: true))
     |> List.zip()
+    |> Enum.map(&Tuple.to_list/1)
   end
 
-  @spec join_and_parse(xs: list(binary())) :: non_neg_integer()
-  def join_and_parse(xs) do
-    xs
-    |> Enum.join()
+  @spec parse_binary(bin :: binary()) :: non_neg_integer()
+  def parse_binary(bin) do
+    bin
     |> Integer.parse(2)
     |> elem(0)
   end
 
   @spec max_frequency_bit(col :: tuple()) :: binary()
   def max_frequency_bit(col) do
-    col
-    |> Tuple.to_list()
-    |> Enum.frequencies()
-    |> case do
-      %{"0" => same, "1" => same} ->
-        "1"
-
-      %{"0" => zeroes, "1" => ones} when zeroes > ones ->
-        "0"
-
-      %{"0" => zeroes, "1" => ones} when zeroes < ones ->
-        "1"
+    case Enum.frequencies(col) do
+      %{"0" => zeroes, "1" => ones} when zeroes > ones -> "0"
+      _ -> "1"
     end
   end
 
   @spec min_frequency_bit(col :: tuple()) :: binary()
   def min_frequency_bit(col) do
-    col
-    |> Tuple.to_list()
-    |> Enum.frequencies()
-    |> case do
-      %{"0" => same, "1" => same} ->
-        "0"
-
-      %{"0" => zeroes, "1" => ones} when zeroes < ones ->
-        "0"
-
-      %{"0" => zeroes, "1" => ones} when zeroes > ones ->
-        "1"
+    case Enum.frequencies(col) do
+      %{"0" => zeroes, "1" => ones} when zeroes > ones -> "1"
+      _ -> "0"
     end
   end
 end
