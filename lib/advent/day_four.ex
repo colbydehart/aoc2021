@@ -115,16 +115,98 @@ defmodule Advent.DayFour do
     |> Enum.filter(&winner?(&1, chosen))
     |> case do
       [winner] ->
-        winner
-        |> Enum.filter(&(&1 not in chosen))
-        |> Enum.sum()
-        |> Kernel.*(x)
+        calculate_score(winner, chosen, x)
 
       _ ->
         bingo(xs, boards, chosen)
     end
   end
 
-  def winner?(board, chosen),
-    do: false
+  @doc """
+  --- Part Two ---
+
+  On the other hand, it might be wise to try a different strategy: let the giant squid win.
+
+  You aren't sure how many bingo boards a giant squid could play at once, so
+  rather than waste time counting its arms, the safe thing to do is to figure
+  out which board will win last and choose that one. That way, no matter which
+  boards it picks, it will win for sure.
+
+  In the above example, the second board is the last to win, which happens
+  after 13 is eventually called and its middle column is completely marked. If
+  you were to keep playing until this point, the second board would have a sum
+  of unmarked numbers equal to 148 for a final score of 148 * 13 = 1924.
+
+  Figure out which board will win last. Once it wins, what would its final score be?
+
+  ## Examples
+
+  iex> Advent.DayFour.reverse_bingo(
+  ...>   [ 7, 4, 9, 5, 11, 17, 23, 2, 0, 14, 21, 24, 10, 16, 13, 6, 15, 25, 12, 22, 18, 20, 8, 19, 3, 26, 1 ],
+  ...>   [
+  ...>     [
+  ...>       [22, 13, 17, 11, 0],
+  ...>       [8, 2, 23, 4, 24],
+  ...>       [21, 9, 14, 16, 7],
+  ...>       [6, 10, 3, 18, 5],
+  ...>       [1, 12, 20, 15, 19]
+  ...>     ],
+  ...>     [
+  ...>       [3, 15, 0, 2, 22],
+  ...>       [9, 18, 13, 17, 5],
+  ...>       [19, 8, 7, 25, 23],
+  ...>       [20, 11, 10, 24, 4],
+  ...>       [14, 21, 16, 12, 6]
+  ...>     ],
+  ...>     [
+  ...>       [14, 21, 17, 24, 4],
+  ...>       [10, 16, 15, 9, 19],
+  ...>       [18, 8, 23, 26, 20],
+  ...>       [22, 11, 13, 6, 5],
+  ...>       [2, 0, 12, 3, 7]
+  ...>     ]
+  ...>   ]
+  ...> )
+  1924
+  """
+  def reverse_bingo(numbers, boards) do
+    winner = Enum.max_by(boards, &turns_to_win(&1, numbers))
+    ttw = turns_to_win(winner, numbers)
+    chosen = Enum.take(numbers, ttw)
+    last_chosen = Enum.at(numbers, ttw - 1)
+    calculate_score(winner, chosen, last_chosen)
+  end
+
+  def turns_to_win(board, numbers) do
+    1..length(numbers)
+    |> Enum.into([])
+    |> Enum.take_while(&(not winner?(board, Enum.take(numbers, &1))))
+    |> Enum.count()
+    |> Kernel.+(1)
+  end
+
+  @spec winner?(board :: list(list(integer())), chosen :: list(integer())) :: boolean()
+  def winner?(board, chosen) do
+    row_won?(board, chosen) or col_won?(board, chosen)
+  end
+
+  def row_won?(board, chosen) do
+    board
+    |> Enum.any?(fn row -> Enum.all?(row, &(&1 in chosen)) end)
+  end
+
+  def col_won?(board, chosen) do
+    board
+    |> List.zip()
+    |> Enum.map(&Tuple.to_list/1)
+    |> Enum.any?(fn col -> Enum.all?(col, &(&1 in chosen)) end)
+  end
+
+  def calculate_score(board, chosen, last_chosen) do
+    board
+    |> Enum.concat()
+    |> Enum.filter(&(&1 not in chosen))
+    |> Enum.sum()
+    |> Kernel.*(last_chosen)
+  end
 end
