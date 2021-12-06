@@ -164,14 +164,8 @@ defmodule Advent.DayFive do
   ]
   """
   def coords_from_diagonals(x1, y1, x2, y2) do
-    0..abs(x1 - x2)
-    |> Enum.map(fn i -> 
-      cond do
-        x1 > x2 and y1 > y2 -> [x1 - i, y1 - i]
-        x1 < x2 and y1 > y2 -> [x1 + i, y1 - i]
-        x1 > x2 and y1 < y2 -> [x1 - i, y1 + i]
-        x1 < x2 and y1 < y2 -> [x1 + i, y1 + i]
-      end
-    end)
+    [x1..x2, y1..y2]
+    |> Enum.zip()
+    |> Enum.map(&Tuple.to_list/1)
   end
 end
