@@ -69,13 +69,109 @@ defmodule Advent.DayFive do
   ...>   [[0,0], [8,8]],
   ...>   [[5,5], [8,2]]
   ...> ])
-  6
+  5
   """
-  def part_one(_input) do
-    6
+  def part_one(vents) do
+    vents
+    |> Enum.reduce(%{}, fn 
+      [[x, y1], [x, y2]], acc -> 
+        y1..y2
+        |> Enum.reduce(acc, fn y, acc -> Map.update(acc, [x, y], 1, & &1 + 1) end)
+      [[x1, y], [x2, y]], acc -> 
+        x1..x2
+        |> Enum.reduce(acc, fn x, acc -> Map.update(acc, [x, y], 1, & &1 + 1) end)
+      _, acc -> acc
+    end)
+    |> Enum.filter(&(elem(&1, 1) > 1))
+    |> Enum.count()
   end
 
-  def part_two(_input) do
-    nil
+  @doc """
+  --- Part Two ---
+
+  Unfortunately, considering only horizontal and vertical lines doesn't give
+  you the full picture; you need to also consider diagonal lines.
+
+  Because of the limits of the hydrothermal vent mapping system, the lines in
+  your list will only ever be horizontal, vertical, or a diagonal line at
+  exactly 45 degrees. In other words:
+
+      An entry like 1,1 -> 3,3 covers points 1,1, 2,2, and 3,3.
+      An entry like 9,7 -> 7,9 covers points 9,7, 8,8, and 7,9.
+
+  Considering all lines from the above example would now produce the following diagram:
+
+  1.1....11.
+  .111...2..
+  ..2.1.111.
+  ...1.2.2..
+  .112313211
+  ...1.2....
+  ..1...1...
+  .1.....1..
+  1.......1.
+  222111....
+
+  You still need to determine the number of points where at least two lines
+  overlap. In the above example, this is still anywhere in the diagram with a 2
+  or larger - now a total of 12 points.
+
+  Consider all of the lines. At how many points do at least two lines overlap?
+
+  ## Examples
+
+  iex> Advent.DayFive.part_two([
+  ...>   [[0,9], [5,9]],
+  ...>   [[8,0], [0,8]],
+  ...>   [[9,4], [3,4]],
+  ...>   [[2,2], [2,1]],
+  ...>   [[7,0], [7,4]],
+  ...>   [[6,4], [2,0]],
+  ...>   [[0,9], [2,9]],
+  ...>   [[3,4], [1,4]],
+  ...>   [[0,0], [8,8]],
+  ...>   [[5,5], [8,2]]
+  ...> ])
+  12
+  """
+  def part_two(vents) do
+    vents
+    |> Enum.reduce(%{}, fn 
+      [[x, y1], [x, y2]], acc -> 
+        y1..y2
+        |> Enum.reduce(acc, fn y, acc -> Map.update(acc, [x, y], 1, & &1 + 1) end)
+      [[x1, y], [x2, y]], acc -> 
+        x1..x2
+        |> Enum.reduce(acc, fn x, acc -> Map.update(acc, [x, y], 1, & &1 + 1) end)
+      [[x1, y1], [x2, y2]], acc when abs(x1 - x2) === abs(y1 - y2) -> 
+        coords_from_diagonals(x1, y1, x2, y2)
+        |> Enum.reduce(acc, fn [x,y], acc -> Map.update(acc, [x, y], 1, & &1 + 1) end)
+      _, acc -> acc
+    end)
+    |> Enum.filter(&(elem(&1, 1) > 1))
+    |> Enum.count()
+  end
+
+  @doc """
+  ## Examples
+  
+  iex> Advent.DayFive.coords_from_diagonals(5,5,8,2)
+  [
+    [5,5],
+    [6,4],
+    [7,3],
+    [8,2]
+  ]
+  """
+  def coords_from_diagonals(x1, y1, x2, y2) do
+    0..abs(x1 - x2)
+    |> Enum.map(fn i -> 
+      cond do
+        x1 > x2 and y1 > y2 -> [x1 - i, y1 - i]
+        x1 < x2 and y1 > y2 -> [x1 + i, y1 - i]
+        x1 > x2 and y1 < y2 -> [x1 - i, y1 + i]
+        x1 < x2 and y1 < y2 -> [x1 + i, y1 + i]
+      end
+    end)
   end
 end

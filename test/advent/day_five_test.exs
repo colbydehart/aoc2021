@@ -21,12 +21,11 @@ defmodule Advent.DayFiveTest do
     [input: input]
   end
 
-  @tag :skip
   test "part one", %{input: input} do
-    assert Advent.DayFive.part_one(input) == nil
+    assert Advent.DayFive.part_one(input) == 5_373
   end
 
   test "part two", %{input: input} do
-    assert Advent.DayFive.part_two(input) == nil
+    assert Advent.DayFive.part_two(input) == 21_514
   end
 end
