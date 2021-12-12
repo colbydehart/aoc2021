@@ -1,11 +1,11 @@
-defmodule Advent.DaySixTest do
+defmodule Advent.DaySevenTest do
   use ExUnit.Case, async: true
-  doctest Advent.DaySix
+  doctest Advent.DaySeven
 
   setup_all do
     input =
       :code.priv_dir(:advent)
-      |> Path.join("./day_six_input.txt")
+      |> Path.join("./day_seven_input.txt")
       |> File.read!()
       |> String.split(",", trim: true)
       |> Enum.map(&String.replace(&1, "\n", ""))
@@ -15,12 +15,12 @@ defmodule Advent.DaySixTest do
   end
 
   test "part one", %{input: input} do
-    assert Advent.DaySix.part_one(input, 80) == 394_994
+    assert Advent.DaySeven.part_one(input) == 344_535
   end
 
-  @tag :skip
   @tag timeout: :infinity
+  @tag :skip
   test "part two", %{input: input} do
-    assert Advent.DaySix.part_one(input, 256) == nil
+    assert Advent.DaySeven.part_two(input) == 95_581_659
   end
 end
