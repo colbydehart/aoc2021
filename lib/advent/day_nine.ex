@@ -56,7 +56,7 @@ defmodule Advent.DayNine do
   def part_one(map) do
     map
     |> low_points()
-    |> Enum.map(fn [x, y] -> pos(map, x, y) + 1 end)
+    |> Enum.map(&(pos(map, &1) + 1))
     |> Enum.sum()
   end
 
@@ -118,68 +118,59 @@ defmodule Advent.DayNine do
   ...>   [3,9,8,7,8,9,4,9,2,1],
   ...>   [9,8,5,6,7,8,9,8,9,2],
   ...>   [8,7,6,7,8,9,6,7,8,9],
-  ...>   [9,8,9,9,9,6,5,6,7,8],
+  ...>   [9,8,9,9,9,6,5,6,7,8]
   ...> ])
   1134
   """
   def part_two(map) do
     low_points(map)
-    |> Enum.map(&basin_size(map, &1))
-    |> Enum.sort()
-    |> Enum.take(3)
-    |> Enum.reduce(&Kernel.*/2)
+    |> Enum.map(&(basin_size(map, &1) + 1))
+
+    # |> Enum.sort()
+    # |> Enum.take(3)
+    # |> Enum.reduce(&Kernel.*/2)
   end
 
-  def basin_size(map, [x, y]) do
-    map
-    |> neighbors(x, y)
-    |> Enum.map(&climb(map, &1))
-    |> Enum.sum()
+  def basin_size(map, [lx, ly]) do
+    coords =
+      map
+      |> all_coords()
+      |> Enum.filter(&(pos(map, &1) == 9))
+      |> Enum.filter(&can_reach(map, &1, [lx, ly]))
   end
 
-  def climb(map, [x, y]) do
-    case pos(map, x, y) do
-      9 ->
-        0
-
-      nil ->
-        0
-
-      _ ->
-        neighbors(map, x, y)
-        |> Enum.map(&climb(map, &1))
-        |> Enum.sum()
-        |> Kernel.+(1)
-    end
+  defp can_reach(map, from, to) do
+    from - to
   end
 
   # Util functions
   defp low_points(map) do
-    for(x <- 0..width(map), y <- 0..(height(map) - 1), do: [x, y])
+    map
+    |> all_coords()
     |> Enum.filter(&lowest_point(map, &1))
   end
 
+  defp all_coords(map), do: for(x <- 0..width(map), y <- 0..(height(map) - 1), do: [x, y])
+
   defp lowest_point(map, [x, y]) do
     map
-    |> neighbors(x, y)
+    |> neighbors([x, y])
     |> Enum.filter(&(&1 !== [x, y]))
-    |> Enum.all?(fn [x_, y_] ->
-      pos(map, x_, y_) > pos(map, x, y)
-    end)
+    |> Enum.all?(&(pos(map, &1) > pos(map, [x, y])))
   end
 
-  defp neighbors(map, x, y) do
+  defp neighbors(map, [x, y]) do
     [[1, 0], [-1, 0], [0, 1], [0, -1]]
-    |> Enum.filter(fn [xd, yd] -> in_bounds?(map, x + xd, y + yd) end)
+    |> Enum.filter(fn [xd, yd] -> in_bounds?(map, [x + xd, y + yd]) end)
     |> Enum.map(fn [xd, yd] -> [x + xd, y + yd] end)
   end
 
-  defp in_bounds?(map, x, y) do
+  defp in_bounds?(map, [x, y]) do
     width(map) > x and x >= 0 and height(map) > y and y >= 0
   end
 
-  defp pos(map, x, y) do
-    if in_bounds?(map, x, y) do
+  defp pos(map, [x, y]) do
+    if in_bounds?(map, [x, y]) do
       map
       |> Enum.at(y)
       |> Enum.at(x)
